@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -9,8 +10,10 @@ import { DashboardPage } from './pages/DashboardPage';
 import { EditPromptPage } from './pages/EditPromptPage';
 import { PromptDetailPage } from './pages/PromptDetailPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { UserProfilePage } from './pages/UserProfilePage';
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+// Changed children to be optional in type definition to satisfy TS strict checks in some environments
+const ProtectedRoute = ({ children }: { children?: React.ReactNode }) => {
   const { user, loading } = useAuth();
   
   if (loading) return <div className="min-h-screen bg-background flex items-center justify-center text-slate-500">Loading...</div>;
@@ -32,6 +35,7 @@ const App = () => {
             {/* Public Routes */}
             <Route path="/" element={<HomePage />} />
             <Route path="/prompt/:id" element={<PromptDetailPage />} />
+            <Route path="/user/:id" element={<UserProfilePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
 

@@ -14,8 +14,19 @@ export interface Prompt {
   categories: string[];
   is_public: boolean;
   likes_count: number;
+  copies_count: number;
+  remixes_count: number;
   created_at: string;
   updated_at: string;
   // Joined fields
-  profiles?: Profile; 
+  profiles?: Profile;
+}
+
+export interface PromptComment {
+  id: string;
+  prompt_id: string;
+  user_id: string;
+  body: string;
+  created_at: string;
+  profiles?: Profile;
 }
