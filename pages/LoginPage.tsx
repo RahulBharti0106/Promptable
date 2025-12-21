@@ -3,18 +3,21 @@ import { supabase } from '../lib/supabaseClient';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { ShieldAlert, MailCheck } from 'lucide-react';
 
 export const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isUnconfirmed, setIsUnconfirmed] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setIsUnconfirmed(false);
 
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -22,7 +25,12 @@ export const LoginPage = () => {
     });
 
     if (error) {
-      setError(error.message);
+      if (error.message.includes('email not confirmed')) {
+        setIsUnconfirmed(true);
+        setError('Your email is not confirmed yet. Please check your inbox for a confirmation link.');
+      } else {
+        setError(error.message === 'Invalid login credentials' ? 'Wrong email or password.' : error.message);
+      }
       setLoading(false);
     } else {
       navigate('/dashboard');
@@ -33,7 +41,13 @@ export const LoginPage = () => {
     <div className="flex min-h-[80vh] items-center justify-center px-4">
       <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-surface p-8 shadow-xl">
         <h2 className="mb-6 text-center text-2xl font-bold text-white">Welcome Back</h2>
-        {error && <div className="mb-4 rounded bg-red-500/10 p-3 text-sm text-red-500">{error}</div>}
+        
+        {error && (
+          <div className={`mb-6 flex items-start space-x-3 rounded-lg p-3 text-sm ${isUnconfirmed ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
+            {isUnconfirmed ? <MailCheck className="h-5 w-5 shrink-0" /> : <ShieldAlert className="h-5 w-5 shrink-0" />}
+            <span>{error}</span>
+          </div>
+        )}
         
         <form onSubmit={handleLogin} className="space-y-4">
           <Input
@@ -57,8 +71,8 @@ export const LoginPage = () => {
           </Button>
         </form>
 
-        <p className="mt-4 text-center text-sm text-slate-400">
-          Don't have an account? <Link to="/signup" className="text-primary hover:underline">Sign up</Link>
+        <p className="mt-6 text-center text-sm text-slate-400">
+          Don't have an account? <Link to="/signup" className="text-primary hover:underline font-medium">Sign up</Link>
         </p>
       </div>
     </div>

@@ -1,10 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { Prompt } from '../../types';
-import { Copy, Edit2, Globe, Lock, Trash2, Check, Heart, MessageSquare, Repeat, ExternalLink } from 'lucide-react';
+import { Copy, Globe, Lock, Trash2, Check, Heart, Repeat, ExternalLink, ShieldCheck } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-// Removed redundant and non-exported supabase import from socialActions
 import { socialActions } from '../../lib/socialActions';
 import { supabase as client } from '../../lib/supabaseClient';
 
@@ -23,11 +21,15 @@ export const PromptCard: React.FC<PromptCardProps> = ({
   onTogglePublic,
   isLiked: initialIsLiked = false
 }) => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
   const [isLiked, setIsLiked] = useState(initialIsLiked);
   const [likesCount, setLikesCount] = useState(prompt.likes_count || 0);
+
+  // Check if current viewer is the global owner (founder)
+  const isFounder = profile?.role === 'owner';
+  const canModerate = isFounder || user?.id === prompt.user_id;
 
   useEffect(() => {
     if (user) {
@@ -102,16 +104,32 @@ export const PromptCard: React.FC<PromptCardProps> = ({
                 {prompt.profiles?.display_name?.charAt(0).toUpperCase() || 'U'}
               </div>
             )}
-            <span className="text-xs font-semibold text-slate-400">@{prompt.profiles?.display_name || 'anonymous'}</span>
+            <div className="flex items-center space-x-1.5">
+              <span className="text-xs font-semibold text-slate-400">@{prompt.profiles?.display_name || 'anonymous'}</span>
+              {prompt.profiles?.role === 'owner' && (
+                <span className="inline-flex items-center rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary border border-primary/20">
+                  <ShieldCheck size={10} className="mr-0.5" /> Founder
+                </span>
+              )}
+            </div>
           </Link>
           
           <div className="flex items-center space-x-1">
-             {showOwnerActions && (
+             {/* Owner or Founder can moderate/toggle public state */}
+             {canModerate && (
                <>
-                 <button onClick={(e) => { e.preventDefault(); onTogglePublic?.(); }} className="p-1.5 text-slate-500 hover:text-white transition-colors">
+                 <button 
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onTogglePublic?.(); }} 
+                  className="p-1.5 text-slate-500 hover:text-white transition-colors"
+                  title={prompt.is_public ? "Make Private" : "Make Public"}
+                >
                    {prompt.is_public ? <Globe size={14} /> : <Lock size={14} />}
                  </button>
-                 <button onClick={(e) => { e.preventDefault(); onDelete?.(); }} className="p-1.5 text-slate-500 hover:text-red-400 transition-colors">
+                 <button 
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete?.(); }} 
+                  className="p-1.5 text-slate-500 hover:text-red-400 transition-colors"
+                  title="Delete Prompt"
+                >
                    <Trash2 size={14} />
                  </button>
                </>
@@ -145,7 +163,7 @@ export const PromptCard: React.FC<PromptCardProps> = ({
             <span>{likesCount}</span>
           </button>
           
-          <div className="flex items-center space-x-1.5 text-xs font-medium text-slate-500">
+          <div className="flex items-center space-x-1.5 text-xs font-medium text-slate-500" title="Remixes">
             <Repeat size={16} />
             <span>{prompt.remixes_count || 0}</span>
           </div>
