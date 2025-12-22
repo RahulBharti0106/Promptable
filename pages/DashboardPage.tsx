@@ -25,14 +25,21 @@ export const DashboardPage = () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('prompts')
-      .select('*, profiles(display_name, avatar_url)')
+      .select(`
+        *,
+        profiles (
+          display_name,
+          avatar_url,
+          role
+        )
+      `)
       .eq('user_id', user!.id)
       .order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching user prompts:', error.message || error);
     } else {
-      setPrompts(data as Prompt[]);
+      setPrompts(data as unknown as Prompt[]);
     }
     setLoading(false);
   };

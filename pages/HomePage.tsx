@@ -23,16 +23,23 @@ export const HomePage = () => {
 
   const fetchPrompts = async () => {
     setLoading(true);
+    
+    // Explicit join syntax
     let query = supabase
       .from('prompts')
-      .select('*, profiles(display_name, avatar_url)')
+      .select(`
+        *,
+        profiles (
+          display_name,
+          avatar_url,
+          role
+        )
+      `)
       .eq('is_public', true);
 
     if (sortBy === 'latest') {
       query = query.order('created_at', { ascending: false });
     } else {
-      // Sorting by trending: likes + remixes + copies
-      // Note: For simplicity, we order by likes_count desc. In production, we might use a complex SQL function.
       query = query.order('likes_count', { ascending: false });
     }
 
@@ -45,7 +52,7 @@ export const HomePage = () => {
     if (error) {
       console.error('Error fetching prompts:', error.message || error);
     } else {
-      setPrompts(data as Prompt[]);
+      setPrompts(data as unknown as Prompt[]);
     }
     setLoading(false);
   };
@@ -66,7 +73,6 @@ export const HomePage = () => {
         </p>
       </div>
 
-      {/* Toolbar */}
       <div className="mb-8 space-y-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="relative flex-1 md:max-w-md">

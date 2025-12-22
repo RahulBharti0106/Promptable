@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { Prompt, Profile } from '../types';
 import { PromptCard } from '../components/ui/PromptCard';
-import { User, Globe, Grid, Share2 } from 'lucide-react';
+import { User, Globe, Grid, Share2, ShieldCheck } from 'lucide-react';
 
 export const UserProfilePage = () => {
   const { id } = useParams();
@@ -28,15 +28,22 @@ export const UserProfilePage = () => {
     
     if (profileData) setProfile(profileData as Profile);
 
-    // Fetch Public Prompts
+    // Fetch Public Prompts with explicit join
     const { data: promptsData } = await supabase
       .from('prompts')
-      .select('*, profiles(display_name, avatar_url)')
+      .select(`
+        *,
+        profiles (
+          display_name,
+          avatar_url,
+          role
+        )
+      `)
       .eq('user_id', id)
       .eq('is_public', true)
       .order('created_at', { ascending: false });
     
-    if (promptsData) setPrompts(promptsData as Prompt[]);
+    if (promptsData) setPrompts(promptsData as unknown as Prompt[]);
     
     setLoading(false);
   };
@@ -46,7 +53,6 @@ export const UserProfilePage = () => {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12">
-      {/* Profile Header */}
       <div className="mb-12 flex flex-col items-center text-center">
         <div className="relative mb-6">
           {profile.avatar_url ? (
@@ -56,13 +62,21 @@ export const UserProfilePage = () => {
               {profile.display_name?.charAt(0) || 'U'}
             </div>
           )}
-          <div className="absolute -bottom-2 -right-2 bg-primary p-2 rounded-full border-4 border-background">
+          <div className="absolute -bottom-2 -right-2 bg-primary p-2 rounded-full border-4 border-background text-white">
             <Globe size={16} />
           </div>
         </div>
         
-        <h1 className="text-4xl font-black text-white mb-2">@{profile.display_name || 'anonymous'}</h1>
-        <p className="text-slate-400 max-w-md">Community Creator since {new Date(profile.created_at).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</p>
+        <div className="flex flex-col items-center space-y-2">
+          <h1 className="text-4xl font-black text-white">@{profile.display_name || 'anonymous'}</h1>
+          {profile.role === 'owner' && (
+            <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-bold text-primary border border-primary/20">
+              <ShieldCheck size={16} className="mr-1.5" /> Founder Account
+            </span>
+          )}
+        </div>
+        
+        <p className="mt-4 text-slate-400 max-w-md">Community Creator since {new Date(profile.created_at).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</p>
         
         <div className="mt-8 flex space-x-8">
            <div className="text-center">
