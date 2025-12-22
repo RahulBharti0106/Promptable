@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import { Prompt, PromptComment } from '../types';
 import { Button } from '../components/ui/Button';
 import { TextArea } from '../components/ui/Input';
-import { Copy, Check, ArrowLeft, Calendar, User, Heart, ExternalLink, MessageSquare, Send } from 'lucide-react';
+import { Copy, Check, ArrowLeft, Calendar, User, Heart, ExternalLink, MessageSquare, Send, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { socialActions } from '../lib/socialActions';
 
@@ -29,23 +29,41 @@ export const PromptDetailPage = () => {
   const fetchPrompt = async () => {
     const { data, error } = await supabase
       .from('prompts')
-      .select('*, profiles(display_name, avatar_url)')
+      .select(`
+        *,
+        profiles (
+          display_name,
+          avatar_url,
+          role
+        )
+      `)
       .eq('id', id)
       .single();
 
-    if (error) console.error(error);
-    else setPrompt(data as Prompt);
-    setLoading(false);
+    if (error) {
+      console.error(error);
+      setLoading(false);
+    } else {
+      setPrompt(data as unknown as Prompt);
+      setLoading(false);
+    }
   };
 
   const fetchComments = async () => {
     const { data } = await supabase
       .from('prompt_comments')
-      .select('*, profiles(display_name, avatar_url)')
+      .select(`
+        *,
+        profiles (
+          display_name,
+          avatar_url,
+          role
+        )
+      `)
       .eq('prompt_id', id)
       .order('created_at', { ascending: false });
     
-    if (data) setComments(data as PromptComment[]);
+    if (data) setComments(data as unknown as PromptComment[]);
   };
 
   const handleCopy = () => {
@@ -77,11 +95,18 @@ export const PromptDetailPage = () => {
         user_id: user.id,
         body: newComment.trim()
       })
-      .select('*, profiles(display_name, avatar_url)')
+      .select(`
+        *,
+        profiles (
+          display_name,
+          avatar_url,
+          role
+        )
+      `)
       .single();
 
     if (!error && data) {
-      setComments([data as PromptComment, ...comments]);
+      setComments([data as unknown as PromptComment, ...comments]);
       setNewComment('');
     }
     setSubmittingComment(false);
@@ -97,7 +122,6 @@ export const PromptDetailPage = () => {
       </Link>
 
       <div className="grid gap-8 lg:grid-cols-3">
-        {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           <div className="mb-6">
             <h1 className="text-4xl font-bold text-white mb-4">{prompt.title}</h1>
@@ -108,7 +132,14 @@ export const PromptDetailPage = () => {
                 ) : (
                   <User size={16} />
                 )}
-                <span className="text-sm font-semibold">@{prompt.profiles?.display_name || 'creator'}</span>
+                <div className="flex items-center space-x-1.5">
+                  <span className="text-sm font-semibold">@{prompt.profiles?.display_name || 'creator'}</span>
+                  {prompt.profiles?.role === 'owner' && (
+                    <span className="inline-flex items-center rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary border border-primary/20">
+                      <ShieldCheck size={10} className="mr-0.5" /> Founder
+                    </span>
+                  )}
+                </div>
               </Link>
               <span className="text-slate-600">•</span>
               <div className="flex items-center text-sm text-slate-400">
@@ -136,7 +167,6 @@ export const PromptDetailPage = () => {
             </div>
           </div>
 
-          {/* Comment Section */}
           <div className="space-y-6 pt-8 border-t border-slate-800">
             <h3 className="text-xl font-bold text-white flex items-center">
               <MessageSquare size={20} className="mr-2 text-primary" />
@@ -197,13 +227,12 @@ export const PromptDetailPage = () => {
           </div>
         </div>
 
-        {/* Sidebar Info */}
         <div className="space-y-6">
           <div className="rounded-2xl border border-slate-800 bg-surface p-6 space-y-6 sticky top-24">
             <div>
               <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3">Context</h3>
               <p className="text-sm text-slate-400 leading-relaxed">
-                {prompt.description || "The creator didn't provide usage instructions, but the prompt should be straightforward. Copy it and paste it into your favorite AI tool."}
+                {prompt.description || "The creator didn't provide usage instructions, but the prompt should be straightforward."}
               </p>
             </div>
 
