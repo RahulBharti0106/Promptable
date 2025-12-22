@@ -24,7 +24,7 @@ export const HomePage = () => {
   const fetchPrompts = async () => {
     setLoading(true);
 
-    // Corrected select syntax for joining profiles
+    // Explicit join syntax for joining profiles
     let query = supabase
       .from('prompts')
       .select(`
@@ -74,7 +74,6 @@ export const HomePage = () => {
         </p>
       </div>
 
-      {/* Toolbar */}
       <div className="mb-8 space-y-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="relative flex-1 md:max-w-md">
