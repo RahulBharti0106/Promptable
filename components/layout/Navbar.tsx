@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Sparkles, LogOut, User, LayoutDashboard, Plus } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { Tooltip } from '../ui/Tooltip';
 
 export const Navbar = () => {
   const { user, signOut } = useAuth();
@@ -23,7 +24,7 @@ export const Navbar = () => {
           <span className="text-xl font-bold text-slate-100">Promptable</span>
         </Link>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-6">
           {user ? (
             <>
               <Link to="/prompts/new" className="hidden sm:block">
@@ -32,25 +33,30 @@ export const Navbar = () => {
                    New Prompt
                  </Button>
               </Link>
-              <Link to="/dashboard" className="text-slate-400 hover:text-white">
-                <LayoutDashboard size={20} />
-              </Link>
-              <Link to="/profile" className="text-slate-400 hover:text-white">
-                <User size={20} />
-              </Link>
-              <button onClick={handleSignOut} className="text-slate-400 hover:text-red-400">
-                <LogOut size={20} />
-              </button>
+              
+              <Tooltip content="Dashboard">
+                <Link to="/dashboard" className="text-slate-400 hover:text-white transition-colors">
+                  <LayoutDashboard size={20} />
+                </Link>
+              </Tooltip>
+
+              <Tooltip content="Profile">
+                <Link to="/profile" className="text-slate-400 hover:text-white transition-colors">
+                  <User size={20} />
+                </Link>
+              </Tooltip>
+
+              <Tooltip content="Logout">
+                <button onClick={handleSignOut} className="text-slate-400 hover:text-red-400 transition-colors">
+                  <LogOut size={20} />
+                </button>
+              </Tooltip>
             </>
           ) : (
             <>
-              <Link to="/login" className="text-sm font-medium text-slate-400 hover:text-white">
-                Log in
-              </Link>
+              <Link to="/login" className="text-sm font-medium text-slate-400 hover:text-white">Log in</Link>
               <Link to="/signup">
-                <Button variant="primary" className="h-9 px-4 text-sm">
-                  Sign up
-                </Button>
+                <Button variant="primary" className="h-9 px-4 text-sm">Sign up</Button>
               </Link>
             </>
           )}

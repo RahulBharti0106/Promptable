@@ -23,8 +23,8 @@ export const HomePage = () => {
 
   const fetchPrompts = async () => {
     setLoading(true);
-
-    // Explicit join syntax for joining profiles
+    
+    // Explicit join syntax
     let query = supabase
       .from('prompts')
       .select(`
@@ -40,7 +40,6 @@ export const HomePage = () => {
     if (sortBy === 'latest') {
       query = query.order('created_at', { ascending: false });
     } else {
-      // Sorting by trending: likes_count desc
       query = query.order('likes_count', { ascending: false });
     }
 
@@ -49,7 +48,7 @@ export const HomePage = () => {
     }
 
     const { data, error } = await query;
-
+    
     if (error) {
       console.error('Error fetching prompts:', error.message || error);
     } else {
@@ -58,8 +57,8 @@ export const HomePage = () => {
     setLoading(false);
   };
 
-  const filteredPrompts = prompts.filter(p =>
-    p.title.toLowerCase().includes(search.toLowerCase()) ||
+  const filteredPrompts = prompts.filter(p => 
+    p.title.toLowerCase().includes(search.toLowerCase()) || 
     p.description?.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -78,8 +77,8 @@ export const HomePage = () => {
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="relative flex-1 md:max-w-md">
             <Search className="absolute left-3 top-2.5 h-5 w-5 text-slate-500" />
-            <Input
-              placeholder="Search by title or description..."
+            <Input 
+              placeholder="Search by title or description..." 
               className="pl-10 h-11"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -87,14 +86,14 @@ export const HomePage = () => {
           </div>
 
           <div className="flex items-center bg-surfaceHighlight p-1 rounded-xl border border-slate-700">
-            <button
+            <button 
               onClick={() => setSortBy('trending')}
               className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${sortBy === 'trending' ? 'bg-primary text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'}`}
             >
               <TrendingUp size={16} />
               <span>Trending</span>
             </button>
-            <button
+            <button 
               onClick={() => setSortBy('latest')}
               className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${sortBy === 'latest' ? 'bg-primary text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'}`}
             >
@@ -104,9 +103,9 @@ export const HomePage = () => {
           </div>
         </div>
 
-        <CategoryChips
-          selectedCategories={selectedCategories}
-          onChange={setSelectedCategories}
+        <CategoryChips 
+          selectedCategories={selectedCategories} 
+          onChange={setSelectedCategories} 
         />
       </div>
 
